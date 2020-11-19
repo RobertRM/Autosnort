@@ -159,8 +159,8 @@ if [ $(whoami) != "root" ]; then
 else
 	print_good "We are root."
 fi
-	 
-########################################	 
+
+########################################
 
 #this is a nice little hack I found in stack exchange to suppress messages during package installation.
 export DEBIAN_FRONTEND=noninteractive
@@ -183,23 +183,23 @@ else
 fi
 
 ########################################
-#These packages are required at a minimum to build snort, the data acquisition (DAQ) libraries, and the pulledpork rule manager. 
+#These packages are required at a minimum to build snort, the data acquisition (DAQ) libraries, and the pulledpork rule manager.
 
 #It seems like Ubuntu 20.04 enables access to universe repos, or has access to the required items by default, so we don't have to shuffle around the sources.list file anymore.
 
 if [[ $release == "20."* ]]; then
 
 	print_status "Installing base packages: libdumbnet-dev ethtool build-essential libpcap0.8-dev libpcre3-dev bison flex autoconf libtool libarchive-tar-perl libnet-ssleay-perl liblzma-dev libluajit-5.1-2 libluajit-5.1-common libluajit-5.1-dev luajit libwww-perl libnghttp2-dev libssl-dev openssl pkg-config zlib1g-dev.."
-	
+
 	declare -a packages=( libdumbnet-dev ethtool build-essential libpcap0.8-dev libpcre3-dev bison flex autoconf libtool libarchive-tar-perl libnet-ssleay-perl liblzma-dev libluajit-5.1-2 libluajit-5.1-common libluajit-5.1-dev luajit libwww-perl libnghttp2-dev libssl-dev openssl pkg-config zlib1g-dev );
-	
+
 	install_packages ${packages[@]}
 
 else
-	
+
 	#some of the packages we need aren't in the main package repo in 18.04, so we need to modify sources.list to install packages from universe. Before doing that, make a backup of sources.list. If the sources.list.bak file exists, that means the script ran before and somehow bombed out, and we don't want to overwrite a good backup that may contain user customizations
 	#We make the assumption that if the user is NOT installing on ubuntu 20.04, then they're installing on 18.04. Its a bold strategy, cotton. I guess we'll see if that works out for us.
-	
+
 	print_status "adjusting /etc/apt/sources.list to utilize universe packages.."
 	print_notification "If you are not running ubuntu 18.04, I highly suggest hitting ctrl+c to cancel this, or you'll end up adding package sources to your distro that could potentially break a lot of stuff."
 	sleep 10
@@ -209,21 +209,21 @@ else
 	else
 		print_notification '/etc/apt/sources.list.bak already exists.'
 	fi
-	
+
 	#rather than using sed or awk to modify the sources.list file, we use echo -e and clobber the sources.list file, replacing it with our modifications that enable universe packages. If users have non-default package repos enabled, they can restore them from the backup file we create before doing this.
 	echo -e "deb http://archive.ubuntu.com/ubuntu bionic main universe\\ndeb http://archive.ubuntu.com/ubuntu bionic-security main universe\\ndeb http://archive.ubuntu.com/ubuntu bionic-updates main universe" > /etc/apt/sources.list
 	error_check 'Modification of /etc/apt/sources.list'
 	print_notification 'This script assumes a default sources.list, and changes all the default repos from "main" to "main universe". If you added any third party sources, you will need to re-enter those manually from the file /etc/apt/sources.list.bak, into your new /etc/apt/sources.list file.'
-	
+
 	print_status "Installing base packages: libdumbnet-dev ethtool build-essential libpcap0.8-dev libpcre3-dev bison flex autoconf libtool libarchive-tar-perl libnet-ssleay-perl liblzma-dev libluajit-5.1-2 libluajit-5.1-common libluajit-5.1-dev luajit libwww-perl libnghttp2-dev libssl-dev openssl pkg-config zlib1g-dev.."
-	
+
 	declare -a packages=( libdumbnet-dev ethtool build-essential libpcap0.8-dev libpcre3-dev bison flex autoconf libtool libarchive-tar-perl libnet-ssleay-perl liblzma-dev libluajit-5.1-2 libluajit-5.1-common libluajit-5.1-dev luajit libwww-perl libnghttp2-dev libssl-dev openssl pkg-config zlib1g-dev );
-	
+
 	install_packages ${packages[@]}
 
 fi
 
-#Ubuntu and Debian-based distros renamed libdnet to libdumbnet due to a library conflict. We create a symlink from libdumbnet.h to libdnet.h because barnyard 2 is expecting to find dnet.h, and does NOT look for dumbnet.h 
+#Ubuntu and Debian-based distros renamed libdnet to libdumbnet due to a library conflict. We create a symlink from libdumbnet.h to libdnet.h because barnyard 2 is expecting to find dnet.h, and does NOT look for dumbnet.h
 
 if [ ! -h /usr/include/dnet.h ]; then
 print_status "Creating symlink for libsfbpf.so.0 on default ld library path.."
@@ -256,7 +256,7 @@ daqver=`echo $daqtar | sed 's/.tar.gz//g'`
 #had to change the regex for the conf file download choices to ensure we're pulling snort 2.x config files.
 
 choice1conf=`egrep -o "snort-20.*-conf" /tmp/snort_conf | sort -ru | head -1` #snort.conf download attempt 1
-choice2conf=`egrep -o "snort-20.*-conf" /tmp/snort_conf | sort -ru | head -2 | tail -1` #snort.conf download 
+choice2conf=`egrep -o "snort-20.*-conf" /tmp/snort_conf | sort -ru | head -2 | tail -1` #snort.conf download
 
 
 rm /tmp/snort
@@ -346,7 +346,7 @@ if [ $? -eq 0 ]; then
 else
 	print_status "Creating snort user and group.."
 	groupadd snort
-	useradd -g snort snort -s /bin/false	
+	useradd -g snort snort -s /bin/false
 fi
 
 print_status "Tightening permissions to /var/log/snort.."
@@ -463,15 +463,15 @@ echo "snort_version=`echo $ppsnortver | cut -d'-' -f2`" >> pulledpork.tmp
 echo "distro=Ubuntu-16-4" >> pulledpork.tmp
 echo "config_path=$snort_basedir/etc/snort.conf" >> pulledpork.tmp
 echo "black_list=$snort_basedir/rules/black_list.rules" >>pulledpork.tmp
-echo "IPRVersion=$snort_basedir/rules/iplists" >>pulledpork.tmp	
+echo "IPRVersion=$snort_basedir/rules/iplists" >>pulledpork.tmp
 echo "ips_policy=security" >> pulledpork.tmp
-echo "version=0.7.4" >> pulledpork.tmp
+echo "version=0.8.0" >> pulledpork.tmp
 cp pulledpork.tmp pulledpork.conf
 
 #Run pulledpork. If the first rule download fails, we try again, and so on until there are no other snort rule tarballs to attempt to download.
 
 cd /usr/src/pulledpork
-	
+
 print_status "Attempting to download rules for $ppsnortver.."
 print_notification "If this hangs, please make sure you set the HTTP_PROXY, http_proxy, HTTPS_PROXY, and https_proxy variables as required!"
 perl pulledpork.pl -W -vv -P -c /usr/src/pulledpork/etc/pulledpork.conf &>> $logfile
@@ -502,7 +502,7 @@ ethtool -K $snort_iface_2 tso off &>> $logfile
 ethtool -K $snort_iface_2 ufo off &>> $logfile
 ethtool -K $snort_iface_2 gso off &>> $logfile
 ethtool -K $snort_iface_2 gro off &>> $logfile
-ethtool -K $snort_iface_2 lro off &>> $logfile 
+ethtool -K $snort_iface_2 lro off &>> $logfile
 
 ########################################
 #The year was 2020 in which systemd doing the one thing its actually pretty well designed for won me over and make me wave the white flag.
@@ -519,7 +519,7 @@ else
 	else
 		print_good "Found snortd systemd service script. Configuring.."
 	fi
-	
+
 	cp snortd.service snortd_2 &>> $logfile
 	sed -i "s#snort_basedir#$snort_basedir#g" snortd_2
 	sed -i "s#snort_iface1#$snort_iface_1#g" snortd_2
@@ -531,7 +531,7 @@ else
 	error_check 'snortd.service installation'
 	print_notification "Location: /etc/systemd/system/snortd.service"
 	systemctl enable snortd.service &>> $logfile
-	error_check 'snortd.service enable'	
+	error_check 'snortd.service enable'
 	rm -rf snortd_2 &>> $logfile
 fi
 
@@ -539,7 +539,7 @@ fi
 
 print_status "Rebooting now.."
 init 6
-print_notification "The log file for autosnort is located at: $logfile" 
+print_notification "The log file for autosnort is located at: $logfile"
 print_good "We're all done here. Have a nice day."
 
 exit 0
